@@ -83,14 +83,28 @@ def parse(s, context=globals()):
     for k in names:
         if k not in nonlambda:
             freevars[k] = tuple( i for i in freevars[k] if i in nonlambda )
+    # Sort the declarations
+    D = []
+    tmp = list(names)
+    while tmp:
+        for i in range(len(tmp)):
+            e = tmp[i]
+            ev = freevars[e]
+            if all(i in D for i in ev):
+                D.append(tmp.pop(i))
+                break
+        # for/else: raise # useless after previous check
+    print(D)
 
 
 
 a = 42
 
 source = """
-        f: lambda n: 2*n + 1,
+        f: lambda n: 2*n + b,
         g2: lambda n: f(n)+1,
-        a: f(3)
+        a: f(3),
+        h: g2(4)+a,
+        b:5
         """
 parse(source)
