@@ -2,6 +2,8 @@
 
 import ast
 
+# TODO: remove context2 (probably useless)
+
 class DuplicateDeclarationError(Exception):
     pass
 class CircularReferenceError(Exception):
@@ -136,23 +138,30 @@ def parse(s, context=globals()):
             kw_defaults=[], kwarg=None, defaults=[]), body=body_outer,
         decorator_list=[], returns=None)])
     M = ast.fix_missing_locations(M)
-    exec(compile(M, '<string>', mode='exec'), context2)
-    S = context2['__lambdascript__']()
+    exec(compile(M, '<string>', mode='exec'), context)
+    S = context['__lambdascript__']()
+    del context['__lambdascript__']
     # mirror all symbols in context (generally globals())
     # don't mirror private symbols
     for k in D:
         if k[0] != '_': context[k] = S[k]
+    # TODO special symbols
+    # TODO curry
+    # TODO continuation
+    # TODO tail recursion
 
 a = 42
 c = 3
+b = 5
 
 source = """
         f: lambda n: 2*n + b + 3,
         g2: lambda n: f(n)+1,
         a: f(3),
-        h: g2(4)+a,
-        b:5
+        h: g2(4)+a
         """
 parse(source)
 
-print(f(5), g2(5))
+print(f(5), g2(5), a, h, b)
+b = 0
+print(f(5), g2(5), a, h, b)
