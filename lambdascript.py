@@ -2,8 +2,6 @@
 
 import ast
 
-# TODO: remove context2 (probably useless)
-
 class DuplicateDeclarationError(Exception):
     pass
 class CircularReferenceError(Exception):
@@ -13,9 +11,7 @@ def parse(s, context=globals()):
     # A lambdascript cell is like a Python dictionary without enclosing braces
     node = ast.parse('{'+s+'}', mode='eval').body
     # Extraction of names (some of them are reserved symbols
-    # Make a copy of context (generally globals()) and remove variables with
-    #    same name (in order to avoid confusion).
-    names, reserved, context2 = {}, {}, dict(context)
+    names, reserved = {}, {}
     nonlambda = []
     for k, v in zip([k.id for k in node.keys], node.values):
         if len(k) >= 2 and k[:2] == "__":
@@ -37,8 +33,6 @@ def parse(s, context=globals()):
             names[k] = v
             if not isinstance(v, ast.Lambda):
                 nonlambda.append(k)
-            if k in context2:
-                del context2[k]
     # Extraction of free variables (but not global ones)
     freevars = {}
     body = [
@@ -60,9 +54,9 @@ def parse(s, context=globals()):
                 kw_defaults=[], kwarg=None, defaults=[]), body=body,
             decorator_list=[], returns=None)])
         M = ast.fix_missing_locations(M)
-        exec(compile(M, '<string>', mode='exec'), context2)
+        exec(compile(M, '<string>', mode='exec'), context)
         body.pop()
-        freevars[k] = context2['__lambdascript__']().__code__.co_freevars
+        freevars[k] = context['__lambdascript__']().__code__.co_freevars
     # An O(n^2) algorithm for checking that non-lambda expressions are not
     # involved in circular dependancies (lambda expressions are allowed to be)
     for k in names:
