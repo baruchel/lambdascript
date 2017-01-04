@@ -42,6 +42,7 @@ def parse(s, context=globals()):
                            kw_defaults=[], kwarg=None, defaults=[]),
                        body=ast.Num(n=0)))
             for k in names ]
+    c = {} # local context
     for k in names:
         # We append a 'Lambda' in front of the expression in case it isn't a Lambda
         # itself (in order to avoid getting the expression evaluated)
@@ -54,9 +55,9 @@ def parse(s, context=globals()):
                 kw_defaults=[], kwarg=None, defaults=[]), body=body,
             decorator_list=[], returns=None)])
         M = ast.fix_missing_locations(M)
-        exec(compile(M, '<string>', mode='exec'), context)
+        exec(compile(M, '<string>', mode='exec'), context, c)
         body.pop()
-        freevars[k] = context['__lambdascript__']().__code__.co_freevars
+        freevars[k] = c['__lambdascript__']().__code__.co_freevars
     # An O(n^2) algorithm for checking that non-lambda expressions are not
     # involved in circular dependancies (lambda expressions are allowed to be)
     for k in names:
@@ -132,9 +133,8 @@ def parse(s, context=globals()):
             kw_defaults=[], kwarg=None, defaults=[]), body=body_outer,
         decorator_list=[], returns=None)])
     M = ast.fix_missing_locations(M)
-    exec(compile(M, '<string>', mode='exec'), context)
-    S = context['__lambdascript__']()
-    del context['__lambdascript__']
+    exec(compile(M, '<string>', mode='exec'), context, c)
+    S = c['__lambdascript__']()
     # mirror all symbols in context (generally globals())
     # don't mirror private symbols
     for k in D:
