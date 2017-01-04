@@ -138,9 +138,10 @@ def parse(s, context=globals()):
     M = ast.fix_missing_locations(M)
     exec(compile(M, '<string>', mode='exec'), context2)
     S = context2['__lambdascript__']()
-    print(S)
-    print(S['f'](5))
-    print(S['g2'](5))
+    # mirror all symbols in context (generally globals())
+    # don't mirror private symbols
+    for k in D:
+        if k[0] != '_': context[k] = S[k]
 
 a = 42
 c = 3
@@ -153,3 +154,5 @@ source = """
         b:5
         """
 parse(source)
+
+print(f(5), g2(5))
