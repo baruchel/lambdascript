@@ -4,6 +4,8 @@ import ast
 
 class DuplicateDeclarationError(Exception):
     pass
+class CircularReferenceError(Exception):
+    pass
 
 def parse(s, context=globals()):
     # A lambdascript cell is like a Python dictionary without enclosing braces
@@ -59,12 +61,30 @@ def parse(s, context=globals()):
         exec(compile(M, '<string>', mode='exec'), context2)
         body.pop()
         freevars[k] = context2['__lambdascript__']().__code__.co_freevars
-    print(freevars)
+    # An O(n^2) algorithm for checking that non-lambda expressions are not
+    # involved in circular dependancies (lambda expressions are allowed to be)
+    for k in names:
+        if k in nonlambda:
+            checked = { k:False for k in names }
+            stack = [k]
+            while stack:
+                i = stack.pop()
+                checked[i] = True
+                j = freevars[i]
+                for e in j:
+                    if e==k:
+                        raise CircularReferenceError(
+        "Symbol '"+k+"' involved in a circular dependancy-relation"
+                                )
+                    if not checked[e]: stack.append(e)
+
+
 
 a = 42
 
 source = """
-        f: lambda n: 2*n + a,
-        g2: lambda n: f(n)+1
+        f: lambda n: 2*n + 1,
+        g2: lambda n: f(n)+1,
+        a: f(3)
         """
 parse(source)
