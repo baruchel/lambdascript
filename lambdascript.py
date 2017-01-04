@@ -80,28 +80,73 @@ def parse(s, context=globals()):
     # Reference of a lambda in another lambda can now be safely removed
     # from the dictionary 'freevars' because sorting the declarations not
     # care about order between two lambda expressions.
+    freevars2 = dict(freevars)
     for k in names:
         if k not in nonlambda:
-            freevars[k] = tuple( i for i in freevars[k] if i in nonlambda )
+            freevars2[k] = tuple( i for i in freevars2[k] if i in nonlambda )
     # Sort the declarations
     D = []
     tmp = list(names)
     while tmp:
         for i in range(len(tmp)):
             e = tmp[i]
-            ev = freevars[e]
+            ev = freevars2[e]
             if all(i in D for i in ev):
                 D.append(tmp.pop(i))
                 break
         # for/else: raise # useless after previous check
-    print(D)
-
-
+    # Compile all expressions
+    body_outer = []
+    body_inner = []
+    for k in nonlambda:
+        body_inner.append(ast.Nonlocal(names=[k]))
+    for k in D:
+        if k in nonlambda:
+            body_outer.append(ast.Assign(targets=[ast.Name(id=k,
+                                                  ctx=ast.Store())],
+                                         value=ast.Num(n=0)))
+            body_inner.append(ast.Assign(targets=[ast.Name(id=k,
+                                                  ctx=ast.Store())],
+                                         value=names[k]))
+        else:
+            body_outer.append(ast.Assign(
+                targets=[ast.Name(id=k, ctx=ast.Store())],
+                value=ast.Lambda(args=ast.arguments(
+                            args=[], vararg=None, kwonlyargs=[],
+                            kw_defaults=[], kwarg=None, defaults=[]),
+                          body=ast.Tuple(elts=[ast.Name(id=i, ctx=ast.Load())
+                        for i in freevars[k]], ctx=ast.Load()))))
+            body_inner.append(ast.Assign(
+                targets=[ast.Attribute(value=ast.Name(id=k, ctx=ast.Load()),
+                                       attr='__code__', ctx=ast.Store())],
+                value=ast.Attribute(value=names[k],
+                                       attr='__code__', ctx=ast.Load())))
+    body_inner.append(ast.Return(value=ast.Dict(
+        keys=[ast.Str(s=k) for k in D],
+        values=[ast.Name(id=k, ctx=ast.Load()) for k in D])))
+    body_outer.append(ast.FunctionDef(name='__inner__', args=ast.arguments(
+                            args=[], vararg=None, kwonlyargs=[],
+                            kw_defaults=[], kwarg=None, defaults=[]),
+                          body=body_inner, decorator_list=[], returns=None))
+    body_outer.append(ast.Return(value=ast.Call(
+                               func=ast.Name(id='__inner__', ctx=ast.Load()),
+                          args=[], keywords=[], starargs=None, kwargs=None)))
+    M = ast.Module(body=[ast.FunctionDef(name='__lambdascript__',
+        args=ast.arguments(args=[], vararg=None, kwonlyargs=[],
+            kw_defaults=[], kwarg=None, defaults=[]), body=body_outer,
+        decorator_list=[], returns=None)])
+    M = ast.fix_missing_locations(M)
+    exec(compile(M, '<string>', mode='exec'), context2)
+    S = context2['__lambdascript__']()
+    print(S)
+    print(S['f'](5))
+    print(S['g2'](5))
 
 a = 42
+c = 3
 
 source = """
-        f: lambda n: 2*n + b,
+        f: lambda n: 2*n + b + 3,
         g2: lambda n: f(n)+1,
         a: f(3),
         h: g2(4)+a,
