@@ -74,9 +74,15 @@ def parse(s, context=globals()):
                 for e in j:
                     if e==k:
                         raise CircularReferenceError(
-        "Symbol '"+k+"' involved in a circular dependancy-relation"
+        "Symbol '"+k+"' involved in a circular reference relation"
                                 )
                     if not checked[e]: stack.append(e)
+    # Reference of a lambda in another lambda can now be safely removed
+    # from the dictionary 'freevars' because sorting the declarations not
+    # care about order between two lambda expressions.
+    for k in names:
+        if k not in nonlambda:
+            freevars[k] = tuple( i for i in freevars[k] if i in nonlambda )
 
 
 
