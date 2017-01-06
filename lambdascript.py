@@ -26,11 +26,12 @@ def parse(s, context=globals(), internal={}):
                  or not isinstance(k.comparators[0].op, ast.USub)
             ):
                 raise SyntaxError()
-            n = k.left.id
+            n = k.left.id # name of the global variable
             try: # CPython3
                 v = k.comparators[0].operand.value
-            except: # Pypy3
+            except AttributeError: # Pypy3
                 v = eval(k.comparators[0].operand.id)
+            # TODO: check if (n)ame of the global variable is in a list
             internal[n] = v
         return
     # Extraction of names (some of them are reserved symbols
