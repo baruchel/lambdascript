@@ -27,7 +27,10 @@ def parse(s, context=globals(), internal={}):
             ):
                 raise SyntaxError()
             n = k.left.id
-            v = k.comparators[0].operand.value
+            try: # CPython3
+                v = k.comparators[0].operand.value
+            except: # Pypy3
+                v = eval(k.comparators[0].operand.id)
             internal[n] = v
         return
     # Extraction of names (some of them are reserved symbols
