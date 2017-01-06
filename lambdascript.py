@@ -7,9 +7,29 @@ class DuplicateDeclarationError(Exception):
 class CircularReferenceError(Exception):
     pass
 
-def parse(s, context=globals()):
+def parse(s, context=globals(), internal={}):
+    """
+    s : a (possibly multiline) string containing lambdascript code
+    context : the context in which the functions are to be mirrored
+    internal : lambdascript global variables
+    """
     # A lambdascript cell is like a Python dictionary without enclosing braces
     node = ast.parse('{'+s+'}', mode='eval').body
+    # Check if the blocks is a special block (containing global variables)
+    if isinstance(node, ast.Set):
+        for k in node.elts:
+            if (    not isinstance(k, ast.Compare)
+                 or len(k.ops) != 1
+                 or not isinstance(k.ops[0], ast.Lt)
+                 or len(k.comparators) != 1
+                 or not isinstance(k.comparators[0], ast.UnaryOp)
+                 or not isinstance(k.comparators[0].op, ast.USub)
+            ):
+                raise SyntaxError()
+            n = k.left.id
+            v = k.comparators[0].operand.value
+            internal[n] = v
+        return
     # Extraction of names (some of them are reserved symbols
     names, reserved = {}, {}
     nonlambda = []
@@ -33,6 +53,13 @@ def parse(s, context=globals()):
             names[k] = v
             if not isinstance(v, ast.Lambda):
                 nonlambda.append(k)
+            else: # TODO
+                pass
+                # parse content of Lambda in order to find the tail-recursion
+                # symbol ...( *args )  with Ellipsis(). See:
+                # ast.dump(ast.parse("...(3)", mode='eval'))
+                # 'Expression(body=Call(func=Ellipsis(), args=[Num(n=3)], keywords=[], starargs=None, kwargs=None))'
+                # On pourra aussi chercher ...[k](3)  pour la continuation
     # Extraction of free variables (but not global ones)
     freevars = {}
     body = [
@@ -143,6 +170,15 @@ def parse(s, context=globals()):
     # TODO curry
     # TODO continuation
     # TODO tail recursion
+
+
+parse("""
+
+   enable_curry <- False,
+   blabla       <- True
+
+        """)
+
 
 a = 42
 c = 3
