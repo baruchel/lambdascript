@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import ast
+import ast, re
 
 class DuplicateDeclarationError(Exception):
     pass
 class CircularReferenceError(Exception):
     pass
 
-def parse(s, context=globals(), internal={}):
+def __parse_block(s, context=globals()):
     """
     s : a (possibly multiline) string containing lambdascript code
     context : the context in which the functions are to be mirrored
@@ -15,25 +15,6 @@ def parse(s, context=globals(), internal={}):
     """
     # A lambdascript cell is like a Python dictionary without enclosing braces
     node = ast.parse('{'+s+'}', mode='eval').body
-    # Check if the blocks is a special block (containing global variables)
-    if isinstance(node, ast.Set):
-        for k in node.elts:
-            if (    not isinstance(k, ast.Compare)
-                 or len(k.ops) != 1
-                 or not isinstance(k.ops[0], ast.Lt)
-                 or len(k.comparators) != 1
-                 or not isinstance(k.comparators[0], ast.UnaryOp)
-                 or not isinstance(k.comparators[0].op, ast.USub)
-            ):
-                raise SyntaxError()
-            n = k.left.id # name of the global variable
-            try: # CPython3
-                v = k.comparators[0].operand.value
-            except AttributeError: # Pypy3
-                v = eval(k.comparators[0].operand.id)
-            # TODO: check if (n)ame of the global variable is in a list
-            internal[n] = v
-        return
     # Extraction of names (some of them are reserved symbols
     names, reserved = {}, {}
     nonlambda = []
@@ -175,13 +156,77 @@ def parse(s, context=globals(), internal={}):
     # TODO continuation
     # TODO tail recursion
 
+def __markdown_parser(fname):
+    in_block = False
+    in_fenced = False
+    last_empty = True
+    re_empty_line = re.compile("^\s*$")
+    re_code_line = re.compile("^(    )|\t")
+    re_fenced = re.compile("(?P<fenced>[~`]{3,})\s*(?P<lang>[^\s`]+)?")
+    block = ""
+    fenced = ""
+    lang = ""
+    ls = 0
+    with open(fname, mode='r') as f:
+        for n, l in enumerate(f, start=1):
+            todo = True
+            while todo:
+                todo = False
+                if in_fenced:
+                    if len(l) >= len(fenced) and fenced == l[:len(fenced)]:
+                        in_fenced = False
+                        in_block = False
+                        last_empty = True
+                        yield (block, lang, ls, n)
+                        lang = ""
+                    else: block += l
+                elif in_block:
+                    if re_code_line.match(l) or re_empty_line.match(l):
+                        block += l
+                    else:
+                        in_block = False
+                        yield (block, lang, ls, n-1)
+                        lang = ""
+                        todo = True
+                elif last_empty and re_code_line.match(l):
+                    in_block = True
+                    last_empty = False
+                    lang = "lambdascript"
+                    block = l
+                    ls = n
+                elif len(l) >= 3 and (
+                        l[:3] == "~~~" or l[:3] == "```" ):
+                    last_empty = False
+                    fenced, lang = re_fenced.match(l).groups()
+                    if lang == None: lang = "lambdascript"
+                    in_block = True
+                    in_fenced = True
+                    block = ""
+                    ls = n
+                elif re_empty_line.match(l):
+                    last_empty = True
+                else:
+                    last_empty = False
+    if in_block: yield (block, lang, ls, n)
 
-parse("""
 
-   enable_curry <- False,
-   blabla       <- True
+def __parse_document(fname):
+    for s, lang, ls, le in __markdown_parser(fname):
+        try:
+            if lang == "python":
+                exec(s, globals())
+            else:
+                __parse_block(s, context=globals())
+        except Exception as e:
+            print("Exception encountered during execution"
+                    + " of block at lines %d-%d:" % (ls, le))
+            raise e
 
-        """)
+
+
+
+
+
 
 
 a = 42
@@ -194,8 +239,10 @@ source = """
         a: f(3),
         h: g2(4)+a
         """
-parse(source)
+__parse_block(source)
 
 print(f(5), g2(5), a, h, b)
 b = 0
 print(f(5), g2(5), a, h, b)
+
+__parse_document("demo1.md")
