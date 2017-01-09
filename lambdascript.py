@@ -54,7 +54,6 @@ def __parse_block(s, context=globals()):
     for k, v in zip([k.id for k in node.keys], node.values):
         if len(k) >= 2 and k[:2] == "__":
             if k in reserved:
-                # TODO: print 's'
                 raise DuplicateDeclarationError(
                         # TODO: find a better sentence
                         "Several uses of the special symbol '%s'"
@@ -63,7 +62,6 @@ def __parse_block(s, context=globals()):
             reserved[k] = v
         else:
             if k in names:
-                # TODO: print 's'
                 raise DuplicateDeclarationError(
                         "Several declarations for the symbol '%s'"
                         + " in the same environment"
@@ -167,11 +165,6 @@ def __parse_block(s, context=globals()):
             body_outer.append(ast.Assign(
                 targets=[ast.Name(id=k, ctx=ast.Store())],
                 value=names[k]))
-               #value=ast.Lambda(args=ast.arguments(
-               #            args=[], vararg=None, kwonlyargs=[],
-               #            kw_defaults=[], kwarg=None, defaults=[]),
-               #          body=ast.Tuple(elts=[ast.Name(id=i, ctx=ast.Load())
-               #        for i in freevars[k]], ctx=ast.Load()))))
             body_inner.append(ast.Assign(
                 targets=[ast.Attribute(value=ast.Name(id=k, ctx=ast.Load()),
                                        attr='__code__', ctx=ast.Store())],
@@ -201,27 +194,6 @@ def __parse_block(s, context=globals()):
     # TODO special symbols
     # TODO curry
     # TODO continuation
-    # TODO tail recursion
-#   fac = lambda f0: lambda n, f: f0(n-1, n*f) if n else f                                 
-#   
-#   def tailrecursive(f):
-#       class tr: 
-#           def __init__(self, args):
-#               self.run = True
-#               self.args = args
-#           def __call__(self, *args):
-#               self.run = True
-#               self.args = args
-#       def __run(*args):
-#           T = tr(args)
-#           while T.run:
-#               T.run = False
-#               r = f(T)(*T.args)
-#           return r
-#       return __run
-#   
-#   myfac = tailrecursive(fac)
-
 
 
 def __markdown_parser(fname):
