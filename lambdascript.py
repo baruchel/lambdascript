@@ -40,6 +40,12 @@ def __make_tail_recursive__(__func):
         return __result__
     return __run_function__
 
+__make_curry__ = lambda f: (lambda n:
+ (lambda f: (lambda x: x(x))(lambda y: f(lambda *args: y(y)(*args))))
+        (lambda g: lambda *args: f(*args) if len(args) >= n
+                                  else lambda *args2: g(*(args+args2)))
+        )(f.__code__.co_argcount)
+
 def __parse_block(s, context=globals()):
     """
     s : a (possibly multiline) string containing lambdascript code
@@ -128,6 +134,12 @@ def __parse_block(s, context=globals()):
                 kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
                 body= names[k])
             names[k] = ast.Call(func=ast.Name(id='__make_tail_recursive__',
+                ctx = ast.Load()), args=[names[k]],
+                 keywords=[], starargs=None, kwargs=None)
+    # Curry
+    for k in names:
+        if k not in nonlambda:
+            names[k] = ast.Call(func=ast.Name(id='__make_curry__',
                 ctx = ast.Load()), args=[names[k]],
                  keywords=[], starargs=None, kwargs=None)
     # Reference of a lambda in another lambda can now be safely removed
