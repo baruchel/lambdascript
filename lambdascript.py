@@ -7,6 +7,39 @@ class DuplicateDeclarationError(Exception):
 class CircularReferenceError(Exception):
     pass
 
+def __ast_check_tail_recursive__(node, symbol):
+    # count all references of 'symbol' (even if not called)
+    # count tail-calls of symbols
+    n = sum((isinstance(w, ast.Name) and w.id==symbol)
+              for w in ast.walk(node))
+    def count(no):
+        if isinstance(no, ast.IfExp):
+            return count(no.body) + count(no.orelse)
+        if (
+                isinstance(no, ast.Call)
+            and isinstance(no.func, ast.Name)
+            and no.func.id == symbol ):
+            return 1
+        return 0
+    return (n>0) and (n==count(node.body))
+
+class __TailRecursiveCall__:
+    def __init__(self, args):
+        self.run = True
+        self.args = args
+    def __call__(self, *args):
+        self.run = True
+        self.args = args
+
+def __make_tail_recursive__(__func):
+    def __run_function__(*args):
+        __T__ = __TailRecursiveCall__(args)
+        while __T__.run:
+            __T__.run = False
+            __result__ = __func(__T__)(*__T__.args)
+        return __result__
+    return __run_function__
+
 def __parse_block(s, context=globals()):
     """
     s : a (possibly multiline) string containing lambdascript code
@@ -86,6 +119,19 @@ def __parse_block(s, context=globals()):
         "Symbol '"+k+"' involved in a circular reference relation"
                                 )
                     if not checked[e]: stack.append(e)
+    # Tail-recursion
+    for k in names:
+        if k not in nonlambda and __ast_check_tail_recursive__(names[k], k):
+            for w in ast.walk(names[k]):
+                if isinstance(w, ast.Name) and w.id==k:
+                    w.id = k
+            names[k] = ast.Lambda(args = ast.arguments(
+                args=[ast.arg(arg=k, annotation=None)], vararg=None,
+                kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
+                body= names[k])
+            names[k] = ast.Call(func=ast.Name(id='__make_tail_recursive__',
+                ctx = ast.Load()), args=[names[k]],
+                 keywords=[], starargs=None, kwargs=None)
     # Reference of a lambda in another lambda can now be safely removed
     # from the dictionary 'freevars' because sorting the declarations not
     # care about order between two lambda expressions.
@@ -120,11 +166,12 @@ def __parse_block(s, context=globals()):
         else:
             body_outer.append(ast.Assign(
                 targets=[ast.Name(id=k, ctx=ast.Store())],
-                value=ast.Lambda(args=ast.arguments(
-                            args=[], vararg=None, kwonlyargs=[],
-                            kw_defaults=[], kwarg=None, defaults=[]),
-                          body=ast.Tuple(elts=[ast.Name(id=i, ctx=ast.Load())
-                        for i in freevars[k]], ctx=ast.Load()))))
+                value=names[k]))
+               #value=ast.Lambda(args=ast.arguments(
+               #            args=[], vararg=None, kwonlyargs=[],
+               #            kw_defaults=[], kwarg=None, defaults=[]),
+               #          body=ast.Tuple(elts=[ast.Name(id=i, ctx=ast.Load())
+               #        for i in freevars[k]], ctx=ast.Load()))))
             body_inner.append(ast.Assign(
                 targets=[ast.Attribute(value=ast.Name(id=k, ctx=ast.Load()),
                                        attr='__code__', ctx=ast.Store())],
@@ -155,6 +202,27 @@ def __parse_block(s, context=globals()):
     # TODO curry
     # TODO continuation
     # TODO tail recursion
+#   fac = lambda f0: lambda n, f: f0(n-1, n*f) if n else f                                 
+#   
+#   def tailrecursive(f):
+#       class tr: 
+#           def __init__(self, args):
+#               self.run = True
+#               self.args = args
+#           def __call__(self, *args):
+#               self.run = True
+#               self.args = args
+#       def __run(*args):
+#           T = tr(args)
+#           while T.run:
+#               T.run = False
+#               r = f(T)(*T.args)
+#           return r
+#       return __run
+#   
+#   myfac = tailrecursive(fac)
+
+
 
 def __markdown_parser(fname):
     in_block = False
