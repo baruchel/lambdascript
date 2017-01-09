@@ -203,9 +203,11 @@ def __parse_block(s, context=globals()):
     # don't mirror private symbols
     for k in D:
         if k[0] != '_': context[k] = S[k]
-    # TODO special symbols
-    # TODO curry
-    # TODO continuation
+    # Parse special symbols
+    for k in reserved:
+        if k == "__print__":
+            E = ast.Expression(body=reserved[k])
+            print(eval(compile(E, '<string>', mode='eval'), context, c))
 
 
 def __markdown_parser(fname):
