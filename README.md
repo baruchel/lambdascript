@@ -57,7 +57,7 @@ Of course, dynamic binding is still performed whenever a symbol was (previously)
 Any valid Python name is a Lambdascript valid names but:
 
   * a symbol beginning with exactly one underscore is lexically bound without being mirrored to the global namespace;
-  * a symbol beginning with two underscores has special meaning and can not be used as arbitrary names when programming;
+  * a symbol beginning with two underscores has special meaning and can not be used as an arbitrary name when programming;
   * unlike well-written pure Python code, it should be considered better here to use short single-letter names for auxiliary functions (like `f`, `g` or even `φ`) with a very clear explanation of their role in a Markdown paragraph and keep long explicit name for the main function in each block of code (two reasons for this: it is safe to re-use the same short names in different locations since they will be lexically bound and another idea is to follow mathematical usages and better integrate with mathematical equations, if any, in the Markdown document; furthermore, an explicit long name for the main function will allow the reader to locate it more easely).
 
 Since short names are encouraged, Unicode symbols may be used (for instance greek letters), but there seems to be a bug in the current versions of PyPy3, concerning a rather obscure feature used by the Lambdascript interpreter and Unicode symbols are not supported if the interpreter is run with PyPy3 instead of CPython3 (this bug has been reported and may be fixed later).
