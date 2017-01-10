@@ -45,7 +45,7 @@ Since order does not matter, the very same block could be written:
 
 Each declaration being made of a label and any Python expression (generally a lambda function).
 
-In the example above, the most important thing is lexical binding: the three objects `f`, `x` and `g` will be mirrored to the global namespace but the binding by itself is performed in a separate protected namespace, meaning that later changing the content of the global variables `a` or `f` will never break the behaviour of the `g` function. This also apply for recursive functions:
+In the example above, the most important thing is lexical binding: the three objects `f`, `x` and `g` will be mirrored to the global namespace but the binding by itself is performed in a separate protected namespace, meaning that later changing the content of the global variables `x` or `f` will never break the behaviour of the `g` function. This also apply for recursive functions:
 
     # Factorial function
     fac : lambda n: n*fac(n-1) if n else 1
