@@ -54,7 +54,7 @@ Of course, dynamic binding is still performed whenever a symbol was (previously)
 
 ### Symbols
 
-Any valid Python name is a Lambdascript valid names but:
+Any valid Python name is a Lambdascript valid name but:
 
   * a symbol beginning with exactly one underscore is lexically bound without being mirrored to the global namespace;
   * a symbol beginning with two underscores has special meaning and can not be used as an arbitrary name when programming;
@@ -64,7 +64,7 @@ Since short names are encouraged, Unicode symbols may be used (for instance gree
 
 ### Functions and constants
 
-Since the binding between objects declared in the same block will never be broken, Lambdascript objects are all "constants" in some way; but for convenience reason, this word will be used only for non-lambda objects. Thus Lambdascript objects are either functions or constants. In the first example, `a` is a constant, which is very useful for writing the following block:
+Since the binding between objects declared in the same block will never be broken, Lambdascript objects are all "constants" in some way; but for convenience reason, this word will be used only for non-lambda objects. Thus Lambdascript objects are either functions or constants. In the first example, `x` is a constant, which is very useful for writing the following block:
 
     area: lambda r: pi * r**2
         # where
@@ -74,7 +74,12 @@ Technically a constant is anything that is not _initially_ declared as a lambda 
 
     f: (lambda: lambda n: 2*n)()
 
-Currying or tail-recusion optimization (see below) will not be applied on constants.
+An important rule is that constants can't be involved in circular dependancy relations, while functions can; thus the following block is perfectly valid:
+
+    f: lambda x: g(x-1)**2 if x else 1,
+    g: lambda x: 2*f(x-1) if x else 1,
+
+Furthermore, currying or tail-recusion optimization (see below) will not be applied on constants.
 
 ### Currying
 
