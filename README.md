@@ -100,3 +100,9 @@ _TODO_
 ### Mixing pure Python and Lambdascript
 
 Pure Python can be embed in the Markdown document by using _fenced code blocks_ and indicating `python` as the language of the block. Any other block of code will be interpreted as Lambdascript code.
+
+The following piece of code is a fenced code block containing Python code (and using the previously defined `fac` function):
+
+~~~python
+print(fac(5))
+~~~
