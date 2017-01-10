@@ -13,7 +13,7 @@ Main features of the _Lambdascript_ programming language are:
 
   * strong emphasis on **literate programming** (a full program being a Markdown document structured with titles, well formatted paragraphs explaining each part of an algorithm, mathematical formulae, pictures, etc.);
   * lexical binding inside each block of code in the Markdown document in order to prevent bugs in case some names would be redefined;
-  * tail-recusrion support;
+  * tail-recursion support;
   * currying of all functions.
 
 It is intended to work either with CPython3 or PyPy3.
