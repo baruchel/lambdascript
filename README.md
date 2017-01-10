@@ -16,9 +16,11 @@ Main features of the _Lambdascript_ programming language are:
   * tail-recusrion support;
   * currying of all functions.
 
+It is intended to work either with CPython3 or PyPy3.
+
 ## Using the interpreter
 
-Right now, the provided piece of code will evaluate the current `README.md` file which is a perfect Lambdascript program! Download both files, put them in the same directory and type: `python3 lambdascript.py`. Then read carefully the document in order to understand what is happening and make some changes in the `README.md` file in order to experiment (or change the last line of the program in order to adapt it to your needs).
+Right now, the provided piece of code will evaluate the current `README.md` file which is a perfect Lambdascript program! Download both files, put them in the same directory and type: `python3 lambdascript.py`. Then read carefully the document in order to understand what is happening and make some changes in the `README.md` file in order to experiment (or change the last line of the program in order to adapt it to your needs). You can also use it with PyPy3.
 
 Of course, this will be improved now, but the initial goal was rather to make the language work.
 
