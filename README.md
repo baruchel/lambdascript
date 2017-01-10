@@ -33,8 +33,8 @@ A Lambdascript program is logically split into blocks of code in the whole Markd
 A Lambdascript block of code is a comma-separated collection of declarations. Unlike Python, Lambdascript does not care at all about indentations; furthermore, it does not care either about order of declarations inside a given code block. An example of a simple block of code is:
 
     f: lambda n: 2*n,
-    a: 42,
-    g: lambda n: f(n)+a
+    x: 42,
+    g: lambda n: f(n)+x
 
 Since order does not matter, the very same block could be written:
 
