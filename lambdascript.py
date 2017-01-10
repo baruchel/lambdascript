@@ -175,8 +175,7 @@ def __parse_block(s, context=globals()):
                                          value=names[k]))
         else:
             body_outer.append(ast.Assign(
-                targets=[ast.Name(id=k, ctx=ast.Store())],
-                value=names[k]))
+                targets=[ast.Name(id=k, ctx=ast.Store())], value=names[k]))
             body_inner.append(ast.Assign(
                 targets=[ast.Attribute(value=ast.Name(id=k, ctx=ast.Load()),
                                        attr='__code__', ctx=ast.Store())],
@@ -203,7 +202,7 @@ def __parse_block(s, context=globals()):
     # don't mirror private symbols
     for k in D:
         if k[0] != '_': context[k] = S[k]
-    # Parse special symbols
+    # Parse special symbols (AFTER)
     for k in reserved:
         if k == "__print__":
             E = ast.Expression(body=reserved[k])
@@ -277,26 +276,4 @@ def __parse_document(fname):
             raise e
 
 
-
-
-
-
-
-
-a = 42
-c = 3
-b = 5
-
-source = """
-        f: lambda n: 2*n + b + 3,
-        g2: lambda n: f(n)+1,
-        a: f(3),
-        h: g2(4)+a
-        """
-__parse_block(source)
-
-print(f(5), g2(5), a, h, b)
-b = 0
-print(f(5), g2(5), a, h, b)
-
-__parse_document("demo1.md")
+__parse_document("README.md")
