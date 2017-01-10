@@ -38,10 +38,10 @@ A Lambdascript block of code is a comma-separated collection of declarations. Un
 
 Since order does not matter, the very same block could be written:
 
-    g: lambda n: f(n)+a
+    g: lambda n: f(n)+x
         # where
         ,    f: lambda n: 2*n
-        ,    a: 42
+        ,    x: 42
 
 Each declaration being made of a label and any Python expression (generally a lambda function).
 
