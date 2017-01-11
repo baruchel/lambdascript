@@ -1,7 +1,7 @@
 # lambdascript
 A new pure functional language built on the top of Python3.
 
-_Warning: this is an alpha release; the core of the interpreter is working and should give a precise idea of the language, but the provided program parses the `README.md` file (see the very last line of the code). This is because it should be discussed (on a mailing list) how to use the interpreter: as a standalone command line tool? as a module called from pure Python code? should it be turned into an interpreter or rather compile collection of functions to `.pyc` modules?_
+_Warning: this is an alpha release; the core of the interpreter is working and should give a precise idea of the language, but the provided program parses the `README.md` file (see the very last line of the code). This is because it should be discussed (on a mailing list) how to use the interpreter: as a standalone command line tool? as a module called from pure Python code? should it be turned into an interpreter or rather compile collection of functions to `.pyc` modules?_ In the initial days after the announcement of the project, I will be watching the `#lambdascript` channel on `irc.freenode.net` for discussing about the further evolutions of the project (answers may take a little time however).
 
 Lambdascript is a new languages (main influence being Haskell) intended to use several Python features and take some benefit of all modules written in Python while programming in a functional style. Since all expressions are Python expressions, one hour should be more than enough to understand the specific philosophy of the language.
 
