@@ -77,7 +77,7 @@ Technically a constant is anything that is not _initially_ declared as a lambda 
 An important rule is that constants can't be involved in circular dependancy relations, while functions can; thus the following block is perfectly valid:
 
     f: lambda x: g(x-1)**2 if x else 1,
-    g: lambda x: 2*f(x-1) if x else 1,
+    g: lambda x: 2*f(x-1) if x else 1
 
 Furthermore, currying or tail-recusion optimization (see below) will not be applied on constants.
 
