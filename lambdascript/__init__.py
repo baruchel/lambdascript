@@ -57,6 +57,8 @@ def parse_block(s, context=globals()):
     context : the context in which the functions are to be mirrored
     internal : lambdascript global variables
     """
+    context['__make_curry__'] = __make_curry__
+    context['__make_tail_recursive__'] = __make_tail_recursive__
     # A lambdascript cell is like a Python dictionary without enclosing braces
     node = ast.parse('{'+s+'}', mode='eval').body
     # Extraction of names (some of them are reserved symbols
