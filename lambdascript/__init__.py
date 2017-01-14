@@ -2,7 +2,7 @@
 A new pure functional language built on the top of Python3.
 """
 
-__version__ = '0.1 alpha'
+__version__ = '0.1.2 alpha'
 # -*- coding: utf-8 -*-
 
 import ast, re
@@ -28,6 +28,9 @@ def __ast_check_tail_recursive__(node, symbol):
         return 0
     return (n>0) and (n==count(node.body))
 
+
+preamble = []
+preamble.append(ast.parse("""
 class __TailRecursiveCall__:
     def __init__(self, args):
         self.run = True
@@ -35,7 +38,9 @@ class __TailRecursiveCall__:
     def __call__(self, *args):
         self.run = True
         self.args = args
+""", mode='exec').body[0])
 
+preamble.append(ast.parse("""
 def __make_tail_recursive__(__func):
     def __run_function__(*args):
         __T__ = __TailRecursiveCall__(args)
@@ -44,12 +49,15 @@ def __make_tail_recursive__(__func):
             __result__ = __func(__T__)(*__T__.args)
         return __result__
     return __run_function__
+""", mode='exec').body[0])
 
+preamble.append(ast.parse("""
 __make_curry__ = lambda f: (lambda n:
  (lambda f: (lambda x: x(x))(lambda y: f(lambda *args: y(y)(*args))))
         (lambda g: lambda *args: f(*args) if len(args) >= n
                                   else lambda *args2: g(*(args+args2)))
         )(f.__code__.co_argcount)
+""", mode='exec').body[0])
 
 def parse_block(s, context=globals()):
     """
@@ -57,8 +65,6 @@ def parse_block(s, context=globals()):
     context : the context in which the functions are to be mirrored
     internal : lambdascript global variables
     """
-    context['__make_curry__'] = __make_curry__
-    context['__make_tail_recursive__'] = __make_tail_recursive__
     # A lambdascript cell is like a Python dictionary without enclosing braces
     node = ast.parse('{'+s+'}', mode='eval').body
     # Extraction of names (some of them are reserved symbols
@@ -167,7 +173,7 @@ def parse_block(s, context=globals()):
                 break
         # for/else: raise # useless after previous check
     # Compile all expressions
-    body_outer = []
+    body_outer = list(preamble)
     body_inner = []
     for k in nonlambda:
         body_inner.append(ast.Nonlocal(names=[k]))
