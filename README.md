@@ -20,7 +20,7 @@ It is intended to work either with CPython3 or PyPy3.
 
 ## Installing the module
 
-I will probably release the interpreter as a module. You can install it by running `pip3 install lambdascript`.
+Just type `pip3 install lambdascript` for installing the module. Two functions are provided: `parse_block` (for evaluating a single block) and `parse_document` (for evaluating a whole markdown document).
 
 ## Using the interpreter
 
@@ -116,7 +116,7 @@ _TODO_
 
 ### Mixing pure Python and Lambdascript
 
-Pure Python can be embed in the Markdown document by using _fenced code blocks_ and indicating `python` as the language of the block. Any other block of code will be interpreted as Lambdascript code.
+Pure Python can be embed in the Markdown document by using _fenced code blocks_ and indicating `python` as the language of the block. A fenced code block can also have `lambdascript` as its language if required.
 
 The following piece of code is a fenced code block containing Python code (and using the previously defined `fac` function):
 
