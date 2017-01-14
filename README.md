@@ -18,9 +18,13 @@ Main features of the _Lambdascript_ programming language are:
 
 It is intended to work either with CPython3 or PyPy3.
 
+## Installing the module
+
+I will probably release the interpreter as a module. You can install it by running `pip3 install lambdascript`.
+
 ## Using the interpreter
 
-Right now, the provided piece of code will evaluate the current `README.md` file which is a perfect Lambdascript program! Download both files, put them in the same directory and type: `python3 lambdascript.py`. Then read carefully the document in order to understand what is happening and make some changes in the `README.md` file in order to experiment (or change the last line of the program in order to adapt it to your needs). You can also use it with PyPy3.
+The best starting point should be to run Python3 (or Pypy3) and type: `import lambdascript` and then `lambdascript.parse_document("README.md")` where the file `README.md` is the current file (which is a valid Lambdascript file). Then read carefully the current document in order to understand what is happening and make some changes in the `README.md` file in order to experiment (or change the last line of the program in order to adapt it to your needs).
 
 Of course, this will be improved now, but the initial goal was rather to make the language work.
 

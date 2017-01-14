@@ -1,3 +1,8 @@
+"""
+A new pure functional language built on the top of Python3.
+"""
+
+__version__ = '0.1 alpha'
 # -*- coding: utf-8 -*-
 
 import ast, re
@@ -46,7 +51,7 @@ __make_curry__ = lambda f: (lambda n:
                                   else lambda *args2: g(*(args+args2)))
         )(f.__code__.co_argcount)
 
-def __parse_block(s, context=globals()):
+def parse_block(s, context=globals()):
     """
     s : a (possibly multiline) string containing lambdascript code
     context : the context in which the functions are to be mirrored
@@ -145,17 +150,16 @@ def __parse_block(s, context=globals()):
     # Reference of a lambda in another lambda can now be safely removed
     # from the dictionary 'freevars' because sorting the declarations not
     # care about order between two lambda expressions.
-    freevars2 = dict(freevars)
     for k in names:
         if k not in nonlambda:
-            freevars2[k] = tuple( i for i in freevars2[k] if i in nonlambda )
+            freevars[k] = tuple( i for i in freevars[k] if i in nonlambda )
     # Sort the declarations
     D = []
     tmp = list(names)
     while tmp:
         for i in range(len(tmp)):
             e = tmp[i]
-            ev = freevars2[e]
+            ev = freevars[e]
             if all(i in D for i in ev):
                 D.append(tmp.pop(i))
                 break
@@ -263,17 +267,16 @@ def __markdown_parser(fname):
     if in_block: yield (block, lang, ls, n)
 
 
-def __parse_document(fname):
+def parse_document(fname, context=globals()):
     for s, lang, ls, le in __markdown_parser(fname):
         try:
             if lang == "python":
-                exec(s, globals())
-            else:
-                __parse_block(s, context=globals())
+                exec(s, context)
+            elif lang == "lambdascript":
+                parse_block(s, context=context)
         except Exception as e:
             print("Exception encountered during execution"
                     + " of block at lines %d-%d:" % (ls, le))
             raise e
 
-
-__parse_document("README.md")
+__all__ = ['parse_block', 'parse_document']
