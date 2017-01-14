@@ -2,7 +2,7 @@
 A new pure functional language built on the top of Python3.
 """
 
-__version__ = '0.1.2 alpha'
+__version__ = '0.1.3 alpha'
 # -*- coding: utf-8 -*-
 
 import ast, re
@@ -29,8 +29,7 @@ def __ast_check_tail_recursive__(node, symbol):
     return (n>0) and (n==count(node.body))
 
 
-preamble = []
-preamble.append(ast.parse("""
+preamble = ast.parse("""
 class __TailRecursiveCall__:
     def __init__(self, args):
         self.run = True
@@ -38,9 +37,7 @@ class __TailRecursiveCall__:
     def __call__(self, *args):
         self.run = True
         self.args = args
-""", mode='exec').body[0])
 
-preamble.append(ast.parse("""
 def __make_tail_recursive__(__func):
     def __run_function__(*args):
         __T__ = __TailRecursiveCall__(args)
@@ -49,15 +46,13 @@ def __make_tail_recursive__(__func):
             __result__ = __func(__T__)(*__T__.args)
         return __result__
     return __run_function__
-""", mode='exec').body[0])
 
-preamble.append(ast.parse("""
 __make_curry__ = lambda f: (lambda n:
  (lambda f: (lambda x: x(x))(lambda y: f(lambda *args: y(y)(*args))))
         (lambda g: lambda *args: f(*args) if len(args) >= n
                                   else lambda *args2: g(*(args+args2)))
         )(f.__code__.co_argcount)
-""", mode='exec').body[0])
+""", mode='exec').body
 
 def parse_block(s, context=globals()):
     """
