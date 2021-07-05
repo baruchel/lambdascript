@@ -62,7 +62,7 @@ Any valid Python name is a Lambdascript valid name but:
 
   * a symbol beginning with exactly one underscore is lexically bound without being mirrored to the global namespace;
   * a symbol beginning with two underscores has special meaning and can not be used as an arbitrary name when programming;
-  * unlike well-written pure Python code, it should be considered better here to use short single-letter names for auxiliary functions (like `f`, `g` or even `φ`) with a very clear explanation of their role in a Markdown paragraph and keep long explicit name for the main function in each block of code (two reasons for this: it is safe to re-use the same short names in different locations since they will be lexically bound and another idea is to follow mathematical usages and better integrate with mathematical equations, if any, in the Markdown document; furthermore, an explicit long name for the main function will allow the reader to locate it more easely).
+  * unlike well-written pure Python code, it should be considered better here to use short single-letter names for auxiliary functions (like `f`, `g` or even `φ`) with a very clear explanation of their role in a Markdown paragraph and keep long explicit name for the main function in each block of code (two reasons for this: it is safe to re-use the same short names in different locations since they will be lexically bound and another idea is to follow mathematical usages and better integrate with mathematical equations, if any, in the Markdown document; furthermore, an explicit long name for the main function will allow the reader to locate it more easily).
 
 Since short names are encouraged, Unicode symbols may be used (for instance greek letters), but there was a bug in the current versions of PyPy3, concerning a rather obscure feature used by the Lambdascript interpreter and Unicode symbols are not supported if the interpreter is run with PyPy3 instead of CPython3 (this bug was [reported and fixed](https://bitbucket.org/pypy/pypy/issues/2457) however and next versions of PyPy3 should work fine in this case too).
 
@@ -78,12 +78,12 @@ Technically a constant is anything that is not _initially_ declared as a lambda 
 
     f: (lambda: lambda n: 2*n)()
 
-An important rule is that constants can't be involved in circular dependancy relations, while functions can; thus the following block is perfectly valid:
+An important rule is that constants can't be involved in circular dependency relations, while functions can; thus the following block is perfectly valid:
 
     f: lambda x: g(x-1)**2 if x else 1,
     g: lambda x: 2*f(x-1) if x else 1
 
-Furthermore, currying or tail-recusion optimization (see below) will not be applied on constants.
+Furthermore, currying or tail-recursion optimization (see below) will not be applied on constants.
 
 ### Currying
 
